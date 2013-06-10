@@ -11,10 +11,6 @@ USER=$1
 if [[ $(echo $USER | grep -c '@') -eq 0 ]]; then
     USER="$USER@localhost"
 fi
-if [[ ${#${USER/@*/}} -gt 16 ]]; then
-    echo "Error: user name is too long (should be no longer than 16)." 1>&2
-    exit 1
-fi
 
 PASSWORD=$2
 if [[ -z $PASSWORD ]]; then
@@ -23,6 +19,6 @@ fi
 
 PASSWORD_HASH=$(mysql -e "SELECT PASSWORD('$PASSWORD')" | grep '\*\w*')
 
-CREATE_USER_QUERY="CREATE USER '${USER/@/'@'}' IDENTIFIED BY PASSWORD '$PASSWORD_HASH'"
+CREATE_USER_QUERY="CREATE USER \`${USER/@/\`@\`}\` IDENTIFIED BY PASSWORD '$PASSWORD_HASH'"
 
 mysql -e $CREATE_USER_QUERY
