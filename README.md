@@ -12,7 +12,7 @@ Antigen:
 
 Or clone this repo and add this into your .zshrc:
 
-    src path/to/cloned/repo
+    source path/to/cloned/repo/mysql.plugin.zsh
 
 Add your mysql credentials into the ~/.my.cnf:
     
