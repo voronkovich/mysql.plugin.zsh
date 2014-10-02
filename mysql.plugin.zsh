@@ -67,8 +67,8 @@ mysql-create-user-and-database() {
         return 1
     fi
 
-    $ZSH_PLUGIN_MYSQL_PATH/mysql-create-user $*
-    $ZSH_PLUGIN_MYSQL_PATH/mysql-create-db $1 $1
+    mysql-create-user $*
+    mysql-create-db $1 $1
 }
 
 # Truncate all tables in a database
