@@ -1,5 +1,6 @@
 alias my='mysql'
 alias mys='mysqlshow'
+alias mya='mysqladmin'
 alias mycu='mysql-create-user'
 alias mycud='mysql-create-user-and-database'
 alias mycd='mysql-create-db'
