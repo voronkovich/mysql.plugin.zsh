@@ -7,6 +7,18 @@ alias mycd='mysql-create-db'
 alias mytd='mysql-truncate-database'
 alias mysu="mysql -e 'SELECT user, host FROM mysql.user'"
 
+# Get password hash
+mysql-password-hash() {
+    PROGNAME=${0##*/}
+
+    if [[ $# -eq 0 ]]; then
+        echo "Usage: $PROGNAME plain_password"
+        return 1
+    fi
+
+    mysql -e "SELECT PASSWORD('$1')" | grep '\*\w*'
+}
+
 # Create a new mysql user
 mysql-create-user() {
     PROGNAME=${0##*/}
@@ -26,7 +38,7 @@ mysql-create-user() {
         echo -n "Enter user password: \n"; read -s PASSWORD
     fi
 
-    PASSWORD_HASH=$(mysql -e "SELECT PASSWORD('$PASSWORD')" | grep '\*\w*')
+    PASSWORD_HASH=$(mysql-password-hash $PASSWORD)
 
     CREATE_USER_QUERY="CREATE USER \`${USER/@/\`@\`}\` IDENTIFIED BY PASSWORD '$PASSWORD_HASH'"
 
