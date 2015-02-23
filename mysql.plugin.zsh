@@ -97,3 +97,6 @@ mysql-truncate-database() {
         mysql -e "TRUNCATE TABLE \`$table\`" $1
     done
 }
+
+alias mysql="$(whence mysql) --pager=${0:a:h}/mycat"
+
