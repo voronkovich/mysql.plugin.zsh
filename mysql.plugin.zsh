@@ -97,3 +97,8 @@ mysql-truncate-database() {
         mysql -e "TRUNCATE TABLE \`$table\`" $1
     done
 }
+if hash grc 2>/dev/null; then
+	export LESS='-R -M'
+	export LESSOPEN='|pygmentize -f 256 -g %s'
+	alias mysql="$(whence mysql) --pager=${0:a:h}/mycat"
+fi
