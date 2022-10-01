@@ -12,3 +12,11 @@ alias mydd='mysql-drop-database'
 alias mytd='mysql-truncate-database'
 
 fpath=("${0:A:h}/functions" $fpath)
+
+autoload -U mysql-create-database
+autoload -U mysql-create-user
+autoload -U mysql-create-user-and-database
+autoload -U mysql-drop-database
+autoload -U mysql-drop-user
+autoload -U mysql-drop-user-and-database
+autoload -U mysql-truncate-database
