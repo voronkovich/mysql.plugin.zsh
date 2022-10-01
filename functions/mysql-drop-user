@@ -21,7 +21,10 @@ Example:
         return 0
     fi
 
-    local -r user="${1}"
+    local user="${1}"
+    if [[ ! "${user}" == *@* ]]; then
+        user="${user}@localhost"
+    fi
 
     [[ "${user}" =~ '^root(@.+)?$' ]] && {
         echo "Can't drop system user: ${user}"
