@@ -22,8 +22,8 @@ Usage:
 
 Options:
 
-  --charset  Database character set [Default: utf8]
-  --collate  Database collation [Default: utf8_general_ci]
+  --charset  Database character set
+  --collate  Database collation
 
 Example:
 
@@ -36,8 +36,8 @@ Example:
 
     mysql-create-user "$@" \
         && mysql-create-database \
-            "${charset[1]:+--charset=}${charset[2]#=}" \
-            "${collate[1]:+--collate=}${collate[2]#=}" \
+            ${charset[1]:+--charset=}${charset[2]#=} \
+            ${collate[1]:+--collate=}${collate[2]#=} \
             "${1%@*}" "${1}"
 }
 
