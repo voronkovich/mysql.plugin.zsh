@@ -8,8 +8,11 @@ mysql-create-user() {
     zparseopts -D -F -K -- {h,-help}=help || return 1
 
     if [[ $# -eq 0 ]] || [[ -n "${help}" ]]; then
-        echo -n "
-Usage: ${progname} <user> [<password>]
+        echo -n "Create new user
+
+Usage:
+
+  ${progname} <user> [<password>]
 
 Example:
 

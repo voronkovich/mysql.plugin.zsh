@@ -14,8 +14,11 @@ mysql-create-database() {
         || return 1
 
     if [[ $# -eq 0 ]] || [[ -n "${help}" ]]; then
-        echo -n "
-Usage: ${progname} <database> [<user>]
+        echo -n "Create new database
+
+Usage:
+
+  ${progname} <database> [<user>]
 
 Options:
 

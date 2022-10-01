@@ -14,8 +14,11 @@ mysql-create-user-and-database() {
         || return 1
 
     if [[ $# -eq 0 ]] || [[ -n "${help}" ]]; then
-        echo -n "
-Usage: ${progname} <user> [<password>]
+        echo -n "Create new user and database with the same name
+
+Usage:
+
+  ${progname} <user> [<password>]
 
 Options:
 
@@ -26,7 +29,7 @@ Example:
 
   ${progname} app
 
-  ${progname} --charset=latin1 --collate=latin1_swedish_ci app bob@%
+  ${progname} --charset=latin1 --collate=latin1_swedish_ci bob@%
 "
         return 0
     fi

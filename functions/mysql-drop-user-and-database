@@ -8,8 +8,11 @@ mysql-drop-user-and-database() {
     zparseopts -D -F -K -- {h,-help}=help || return 1
 
     if [[ $# -eq 0 ]] || [[ -n "${help}" ]]; then
-        echo -n "
-Usage: ${progname} <user>
+        echo -n "Drop user and database with the same name
+
+Usage:
+
+  ${progname} <user>
 
 Example:
 
