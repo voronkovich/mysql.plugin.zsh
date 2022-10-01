@@ -25,13 +25,14 @@ Example:
 
     local user="${1}"
     if [[ ! "${user}" == *@* ]]; then
-        user="${user}@localhost"
+        user="${user}@${ZSH_PLUGIN_MYSQL_DEFAULT_USER_HOST:-localhost}"
     fi
 
     local password="${2}"
     if [[ -z "${password}" ]]; then
         echo -n 'Enter password: '
         read -s password
+        echo
     fi
 
     command mysql -e "CREATE USER \`${user/@/\`@\`}\` IDENTIFIED BY '${password}'"
