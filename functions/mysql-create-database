@@ -2,9 +2,13 @@
 
 mysql-create-database() {
     local -r progname="${0##*/}"
+
+    local -r charset_default="${ZSH_PLUGIN_MYSQL_DEFAULT_CHARSET:-utf8mb4}"
+    local -r collate_default="${ZSH_PLUGIN_MYSQL_DEFAULT_COLLATE:-utf8mb4_0900_ai_ci}"
+
     local help
-    local -a charset=([2]='utf8')
-    local -a collate=([2]='utf8_general_ci')
+    local -a charset=([2]="${charset_default}")
+    local -a collate=([2]="${collate_default}")
 
     zmodload zsh/zutil
     zparseopts -D -F -K -- \
@@ -22,8 +26,8 @@ Usage:
 
 Options:
 
-  --charset  Database character set [Default: utf8]
-  --collate  Database collation [Default: utf8_general_ci]
+  --charset  Database character set [Default: ${charset_default}]
+  --collate  Database collation [Default: ${collate_default}]
 
 Example:
 
