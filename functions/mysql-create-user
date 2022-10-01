@@ -30,7 +30,7 @@ Example:
 
     local password="${2}"
     if [[ -z "${password}" ]]; then
-        echo -n "Enter password:\n"
+        echo -n 'Enter password: '
         read -s password
     fi
 
