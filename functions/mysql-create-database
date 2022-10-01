@@ -1,0 +1,50 @@
+#!/usr/bin/env zsh
+
+mysql-create-database() {
+    local -r progname="${0##*/}"
+    local help
+    local -a charset=([2]='utf8')
+    local -a collate=([2]='utf8_general_ci')
+
+    zmodload zsh/zutil
+    zparseopts -D -F -K -- \
+        {h,-help}=help \
+        -charset:=charset \
+        -collate:=collate \
+        || return 1
+
+    if [[ $# -eq 0 ]] || [[ -n "${help}" ]]; then
+        echo -n "
+Usage: ${progname} <database> [<user>]
+
+Options:
+
+  --charset  Database character set [Default: utf8]
+  --collate  Database collation [Default: utf8_general_ci]
+
+Example:
+
+  ${progname} app
+
+  ${progname} --charset=latin1 --collate=latin1_swedish_ci app bob@%
+"
+        return 0
+    fi
+
+    local -r database="${1}"
+    local user="${2}"
+
+    local query="CREATE DATABASE \`${database}\` CHARACTER SET ${charset[2]#=} COLLATE ${collate[2]#=}"
+
+    if [[ -n "${user}" ]]; then
+        if [[ ! "${user}" == *@* ]]; then
+            user="${user}@localhost"
+        fi
+
+        query+="; GRANT ALL PRIVILEGES ON \`${database}\`.* TO \`${user/@/\`@\`}\`"
+    fi
+
+    command mysql -e "${query}"
+}
+
+mysql-create-database "$@"

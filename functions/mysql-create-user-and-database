@@ -1,0 +1,41 @@
+#!/usr/bin/env zsh
+
+mysql-create-user-and-database() {
+    local -r progname="${0##*/}"
+    local help
+    local -a charset=([2]='utf8')
+    local -a collate=([2]='utf8_general_ci')
+
+    zmodload zsh/zutil
+    zparseopts -D -F -K -- \
+        {h,-help}=help \
+        -charset:=charset \
+        -collate:=collate \
+        || return 1
+
+    if [[ $# -eq 0 ]] || [[ -n "${help}" ]]; then
+        echo -n "
+Usage: ${progname} <user> [<password>]
+
+Options:
+
+  --charset  Database character set [Default: utf8]
+  --collate  Database collation [Default: utf8_general_ci]
+
+Example:
+
+  ${progname} app
+
+  ${progname} --charset=latin1 --collate=latin1_swedish_ci app bob@%
+"
+        return 0
+    fi
+
+    mysql-create-user "$@" \
+        && mysql-create-database \
+            --charset="${charset[2]#=}" \
+            --collate="${collate[2]#=}" \
+            "${1%@*}" "${1}"
+}
+
+mysql-create-user-and-database "$@"

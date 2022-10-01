@@ -1,0 +1,24 @@
+#!/usr/bin/env zsh
+
+mysql-drop-user-and-database() {
+    local -r progname="${0##*/}"
+    local help
+
+    zmodload zsh/zutil
+    zparseopts -D -F -K -- {h,-help}=help || return 1
+
+    if [[ $# -eq 0 ]] || [[ -n "${help}" ]]; then
+        echo -n "
+Usage: ${progname} <user>
+
+Example:
+
+  ${progname} app
+"
+        return 0
+    fi
+
+    mysql-drop-user "$@" && mysql-drop-database "${1%@*}"
+}
+
+mysql-drop-user-and-database "$@"

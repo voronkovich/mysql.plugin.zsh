@@ -1,0 +1,31 @@
+#!/usr/bin/env zsh
+
+mysql-drop-user() {
+    local -r progname="${0##*/}"
+    local help
+
+    zmodload zsh/zutil
+    zparseopts -D -F -K -- {h,-help}=help || return 1
+
+    if [[ $# -eq 0 ]] || [[ -n "${help}" ]]; then
+        echo -n "
+Usage: ${progname} <user>
+
+Example:
+
+  ${progname} bob
+"
+        return 0
+    fi
+
+    local -r user="${1}"
+
+    [[ "${user}" =~ '^root(@.+)?$' ]] && {
+        echo "Can't drop system user: ${user}"
+        return 1
+    } >&2
+
+    command mysql -e "DROP USER \`${user/@/\`@\`}\`"
+}
+
+mysql-drop-user "$@"

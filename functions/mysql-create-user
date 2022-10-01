@@ -1,0 +1,37 @@
+#!/usr/bin/env zsh
+
+mysql-create-user() {
+    local -r progname="${0##*/}"
+    local help
+
+    zmodload zsh/zutil
+    zparseopts -D -F -K -- {h,-help}=help || return 1
+
+    if [[ $# -eq 0 ]] || [[ -n "${help}" ]]; then
+        echo -n "
+Usage: ${progname} <user> [<password>]
+
+Example:
+
+  ${progname} bob qwerty123
+
+  ${progname} alice@%
+"
+        return 0
+    fi
+
+    local user="${1}"
+    if [[ ! "${user}" == *@* ]]; then
+        user="${user}@localhost"
+    fi
+
+    local password="${2}"
+    if [[ -z "${password}" ]]; then
+        echo -n "Enter password:\n"
+        read -s password
+    fi
+
+    command mysql -e "CREATE USER \`${user/@/\`@\`}\` IDENTIFIED BY '${password}'"
+}
+
+mysql-create-user "$@"
