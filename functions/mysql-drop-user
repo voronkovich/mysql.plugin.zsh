@@ -23,7 +23,7 @@ Example:
 
     local user="${1}"
     if [[ ! "${user}" == *@* ]]; then
-        user="${user}@localhost"
+        user="${user}@${ZSH_PLUGIN_MYSQL_DEFAULT_USER_HOST:-localhost}"
     fi
 
     [[ "${user}" =~ '^root(@.+)?$' ]] && {
