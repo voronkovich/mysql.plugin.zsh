@@ -1,13 +1,15 @@
 alias my='mysql'
 alias mys='mysqlshow'
+alias mysu="mysql -e 'SELECT user, host FROM mysql.user'"
 alias mya='mysqladmin'
 alias mycu='mysql-create-user'
+alias mydu='mysql-drop-user'
 alias mycud='mysql-create-user-and-database'
+alias mydud='mysql-drop-user-and-database'
 alias mycd='mysql-create-database'
+alias mydd='mysql-drop-database'
 alias mytd='mysql-truncate-database'
-alias mysu="mysql -e 'SELECT user, host FROM mysql.user'"
 
-# Create a new mysql user
 mysql-create-user() {
     local -r progname="${0##*/}"
     local help
@@ -42,7 +44,34 @@ Example:
     command mysql -e "CREATE USER \`${user/@/\`@\`}\` IDENTIFIED BY '${password}'"
 }
 
-# Create a new mysql database
+mysql-drop-user() {
+    local -r progname="${0##*/}"
+    local help
+
+    zmodload zsh/zutil
+    zparseopts -D -F -K -- {h,-help}=help || return 1
+
+    if [[ $# -eq 0 ]] || [[ -n "${help}" ]]; then
+        echo -n "
+Usage: ${progname} <user> [<password>]
+
+Example:
+
+  ${progname} bob
+"
+        return 0
+    fi
+
+    local -r user="${1}"
+
+    [[ "${user}" =~ '^root(@.+)?$' ]] && {
+        echo "Can't drop system user: ${user}"
+        return 1
+    } >&2
+
+    command mysql -e "DROP USER \`${user/@/\`@\`}\`"
+}
+
 mysql-create-database() {
     local -r progname="${0##*/}"
     local help
@@ -90,7 +119,34 @@ Example:
     command mysql -e "${query}"
 }
 
-# Create a new user and database with the same name
+mysql-drop-database() {
+    local -r progname="${0##*/}"
+    local help
+
+    zmodload zsh/zutil
+    zparseopts -D -F -K -- {h,-help}=help || return 1
+
+    if [[ $# -eq 0 ]] || [[ -n "${help}" ]]; then
+        echo -n "
+Usage: ${progname} <database>
+
+Example:
+
+  ${progname} mydb
+"
+        return 0
+    fi
+
+    local -r database="${1}"
+
+    [[ "${database}" =~ '^(sys|mysql|information_schema|performance_schema)$' ]] && {
+        echo "Can't drop system database: ${database}"
+        return 1
+    } >&2
+
+    command mysql -e "DROP DATABASE \`${database}\`"
+}
+
 mysql-create-user-and-database() {
     local -r progname="${0##*/}"
     local help
@@ -129,7 +185,27 @@ Example:
             "${1%@*}" "${1}"
 }
 
-# Truncate all tables in a database
+mysql-drop-user-and-database() {
+    local -r progname="${0##*/}"
+    local help
+
+    zmodload zsh/zutil
+    zparseopts -D -F -K -- {h,-help}=help || return 1
+
+    if [[ $# -eq 0 ]] || [[ -n "${help}" ]]; then
+        echo -n "
+Usage: ${progname} <user>
+
+Example:
+
+  ${progname} app
+"
+        return 0
+    fi
+
+    mysql-drop-user "$@" && mysql-drop-database "${1%@*}"
+}
+
 mysql-truncate-database() {
     local -r progname="${0##*/}"
     local help
