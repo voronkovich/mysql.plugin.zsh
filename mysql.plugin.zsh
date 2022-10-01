@@ -3,97 +3,152 @@ alias mys='mysqlshow'
 alias mya='mysqladmin'
 alias mycu='mysql-create-user'
 alias mycud='mysql-create-user-and-database'
-alias mycd='mysql-create-db'
+alias mycd='mysql-create-database'
 alias mytd='mysql-truncate-database'
 alias mysu="mysql -e 'SELECT user, host FROM mysql.user'"
 
-# Get password hash
-mysql-password-hash() {
-    PROGNAME=${0##*/}
-
-    if [[ $# -eq 0 ]]; then
-        echo "Usage: $PROGNAME plain_password"
-        return 1
-    fi
-
-    mysql -e "SELECT PASSWORD('$1')" | grep '\*\w*'
-}
-
 # Create a new mysql user
 mysql-create-user() {
-    PROGNAME=${0##*/}
+    local -r progname="${0##*/}"
+    local help
 
-    if [[ $# -eq 0 ]]; then
-        echo "Usage: $PROGNAME user_name [password]"
-        return 1
+    zmodload zsh/zutil
+    zparseopts -D -F -K -- {h,-help}=help || return 1
+
+    if [[ $# -eq 0 ]] || [[ -n "${help}" ]]; then
+        echo -n "
+Usage: ${progname} <user> [<password>]
+
+Example:
+
+  ${progname} bob qwerty123
+
+  ${progname} alice@%
+"
+        return 0
     fi
 
-    USER=$1
-    if [[ $(echo $USER | grep -c '@') -eq 0 ]]; then
-        USER="$USER@localhost"
+    local user="${1}"
+    if [[ ! "${user}" == *@* ]]; then
+        user="${user}@localhost"
     fi
 
-    PASSWORD=$2
-    if [[ -z $PASSWORD ]]; then
-        echo -n "Enter user password: \n"; read -s PASSWORD
+    local password="${2}"
+    if [[ -z "${password}" ]]; then
+        echo -n "Enter password:\n"
+        read -s password
     fi
 
-    PASSWORD_HASH=$(mysql-password-hash $PASSWORD)
-
-    CREATE_USER_QUERY="CREATE USER \`${USER/@/\`@\`}\` IDENTIFIED BY PASSWORD '$PASSWORD_HASH'"
-
-    mysql -e $CREATE_USER_QUERY
+    command mysql -e "CREATE USER \`${user/@/\`@\`}\` IDENTIFIED BY '${password}'"
 }
 
 # Create a new mysql database
-mysql-create-db() {
-    PROGNAME=${0##*/}
+mysql-create-database() {
+    local -r progname="${0##*/}"
+    local help
+    local -a charset=([2]='utf8')
+    local -a collate=([2]='utf8_general_ci')
 
-    if [[ $# -eq 0 ]]; then
-        echo "Usage: $PROGNAME database_name [user_name]"
-        return 1
+    zmodload zsh/zutil
+    zparseopts -D -F -K -- \
+        {h,-help}=help \
+        -charset:=charset \
+        -collate:=collate \
+        || return 1
+
+    if [[ $# -eq 0 ]] || [[ -n "${help}" ]]; then
+        echo -n "
+Usage: ${progname} <database> [<user>]
+
+Options:
+
+  --charset  Database character set [Default: utf8]
+  --collate  Database collation [Default: utf8_general_ci]
+
+Example:
+
+  ${progname} app
+
+  ${progname} --charset=latin1 --collate=latin1_swedish_ci app bob@%
+"
+        return 0
     fi
 
-    DATABASE=$1
-    USER=$2
-    CHARACTER_SET=${CHARACTER_SET=utf8}
-    COLLATION=${COLLATION=utf8_general_ci}
+    local -r database="${1}"
+    local user="${2}"
 
-    CREATE_DATABASE_QUERY="CREATE DATABASE \`$DATABASE\` CHARACTER SET $CHARACTER_SET COLLATE $COLLATION"
+    local query="CREATE DATABASE \`${database}\` CHARACTER SET ${charset[2]#=} COLLATE ${collate[2]#=}"
 
-    if [[ -n $USER ]]; then
-        if [[ $(echo $USER | grep -c '@') -eq 0 ]]; then
-            USER="$USER@localhost"
+    if [[ -n "${user}" ]]; then
+        if [[ ! "${user}" == *@* ]]; then
+            user="${user}@localhost"
         fi
-        CREATE_DATABASE_QUERY="$CREATE_DATABASE_QUERY; GRANT ALL PRIVILEGES ON \`$DATABASE\`.* TO \`${USER/@/\`@\`}\`"
+
+        query+="; GRANT ALL PRIVILEGES ON \`${database}\`.* TO \`${user/@/\`@\`}\`"
     fi
 
-    mysql -e $CREATE_DATABASE_QUERY
+    command mysql -e "${query}"
 }
 
 # Create a new user and database with the same name
 mysql-create-user-and-database() {
-    PROGNAME=${0##*/}
+    local -r progname="${0##*/}"
+    local help
+    local -a charset=([2]='utf8')
+    local -a collate=([2]='utf8_general_ci')
 
-    if [[ $# -eq 0 ]]; then
-        echo "Usage: $PROGNAME user_name [password]"
-        return 1
+    zmodload zsh/zutil
+    zparseopts -D -F -K -- \
+        {h,-help}=help \
+        -charset:=charset \
+        -collate:=collate \
+        || return 1
+
+    if [[ $# -eq 0 ]] || [[ -n "${help}" ]]; then
+        echo -n "
+Usage: ${progname} <user> [<password>]
+
+Options:
+
+  --charset  Database character set [Default: utf8]
+  --collate  Database collation [Default: utf8_general_ci]
+
+Example:
+
+  ${progname} app
+
+  ${progname} --charset=latin1 --collate=latin1_swedish_ci app bob@%
+"
+        return 0
     fi
 
-    mysql-create-user $*
-    mysql-create-db $1 $1
+    mysql-create-user "$@" \
+        && mysql-create-database \
+            --charset="${charset[2]#=}" \
+            --collate="${collate[2]#=}" \
+            "${1%@*}" "${1}"
 }
 
 # Truncate all tables in a database
 mysql-truncate-database() {
-    PROGNAME=${0##*/}
+    local -r progname="${0##*/}"
+    local help
 
-    if [[ $# -eq 0 ]]; then
-        echo "Usage: $PROGNAME database"
-        return 1
+    zmodload zsh/zutil
+    zparseopts -D -F -K -- {h,-help}=help || return 1
+
+    if [[ $# -eq 0 ]] || [[ -n "${help}" ]]; then
+        echo -n "
+Usage: ${progname} <database>
+
+Example:
+
+  ${progname} my-blog
+"
+        return 0
     fi
 
-    for table in $(mysql -Nse 'SHOW TABLES' $1); do
-        mysql -e "TRUNCATE TABLE \`$table\`" $1
+    for table in $(mysql -Nse 'SHOW TABLES' "${1}"); do
+        command mysql -e "TRUNCATE TABLE '${table}'" "${1}"
     done
 }
